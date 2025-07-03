@@ -1,0 +1,255 @@
+Project structure of: /data/myp/sam2/sam2grasp
+
+├── .clang-format
+├── .git
+│   ├── HEAD
+│   ├── branches
+│   ├── config
+│   ├── description
+│   ├── hooks
+│   │   ├── applypatch-msg.sample
+│   │   ├── commit-msg.sample
+│   │   ├── fsmonitor-watchman.sample
+│   │   ├── post-update.sample
+│   │   ├── pre-applypatch.sample
+│   │   ├── pre-commit.sample
+│   │   ├── pre-merge-commit.sample
+│   │   ├── pre-push.sample
+│   │   ├── pre-rebase.sample
+│   │   ├── pre-receive.sample
+│   │   ├── prepare-commit-msg.sample
+│   │   └── update.sample
+│   ├── index
+│   ├── info
+│   │   └── exclude
+│   ├── logs
+│   │   ├── HEAD
+│   │   └── refs
+│   │       ├── heads
+│   │       │   └── main
+│   │       └── remotes
+│   │           └── origin
+│   │               └── HEAD
+│   ├── objects
+│   │   ├── e1
+│   │   │   └── bd8dd5bfd4eab59082fda29dd7ca888e84daa8
+│   │   ├── f2
+│   │   │   └── 3dea8217330eaf82aa9ed0b1b5787170b74401
+│   │   ├── info
+│   │   └── pack
+│   │       ├── pack-2a02715aba26a1bf3739e61ec4669e4083763367.idx
+│   │       └── pack-2a02715aba26a1bf3739e61ec4669e4083763367.pack
+│   ├── packed-refs
+│   └── refs
+│       ├── heads
+│       │   └── main
+│       ├── remotes
+│       │   └── origin
+│       │       └── HEAD
+│       └── tags
+├── .github
+│   └── workflows
+│       └── check_fmt.yml
+├── .gitignore
+├── .idea
+│   ├── .gitignore
+│   ├── inspectionProfiles
+│   │   └── profiles_settings.xml
+│   ├── misc.xml
+│   ├── modules.xml
+│   ├── sam2grasp.iml
+│   ├── vcs.xml
+│   └── workspace.xml
+├── .watchmanconfig
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── INSTALL.md
+├── LICENSE
+├── LICENSE_cctorch
+├── MANIFEST.in
+├── README.md
+├── RELEASE_NOTES.md
+├── SAM_2.egg-info
+│   ├── PKG-INFO
+│   ├── SOURCES.txt
+│   ├── dependency_links.txt
+│   ├── requires.txt
+│   └── top_level.txt
+├── assets
+│   ├── demo1.jpg
+│   ├── demo2.jpg
+│   ├── demo3.jpg
+│   ├── demo4.jpg
+│   ├── model_diagram.png
+│   └── sa_v_dataset.jpg
+├── backend.Dockerfile
+├── checkpoints
+│   ├── download_ckpts.sh
+│   ├── sam2.1_hiera_base_plus.pt
+│   ├── sam2.1_hiera_large.pt
+│   ├── sam2.1_hiera_large.pt.1
+│   ├── sam2.1_hiera_small.pt
+│   └── sam2.1_hiera_tiny.pt
+├── docker-compose.yaml
+├── project_structure.txt
+├── pyproject.toml
+├── sam2
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-310.pyc
+│   │   ├── build_sam.cpython-310.pyc
+│   │   ├── sam2_image_predictor.cpython-310.pyc
+│   │   └── sam2_video_predictor.cpython-310.pyc
+│   ├── automatic_mask_generator.py
+│   ├── benchmark.py
+│   ├── build_sam.py
+│   ├── configs
+│   │   ├── sam2
+│   │   │   ├── sam2_hiera_b+.yaml
+│   │   │   ├── sam2_hiera_l.yaml
+│   │   │   ├── sam2_hiera_s.yaml
+│   │   │   └── sam2_hiera_t.yaml
+│   │   ├── sam2.1
+│   │   │   ├── sam2.1_hiera_b+.yaml
+│   │   │   ├── sam2.1_hiera_l.yaml
+│   │   │   ├── sam2.1_hiera_s.yaml
+│   │   │   └── sam2.1_hiera_t.yaml
+│   │   └── sam2.1_training
+│   │       └── sam2.1_hiera_b+_MOSE_finetune.yaml
+│   ├── csrc
+│   │   └── connected_components.cu
+│   ├── modeling
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-310.pyc
+│   │   │   ├── memory_attention.cpython-310.pyc
+│   │   │   ├── memory_encoder.cpython-310.pyc
+│   │   │   ├── position_encoding.cpython-310.pyc
+│   │   │   ├── sam2_base.cpython-310.pyc
+│   │   │   └── sam2_utils.cpython-310.pyc
+│   │   ├── backbones
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-310.pyc
+│   │   │   │   ├── hieradet.cpython-310.pyc
+│   │   │   │   ├── image_encoder.cpython-310.pyc
+│   │   │   │   └── utils.cpython-310.pyc
+│   │   │   ├── hieradet.py
+│   │   │   ├── image_encoder.py
+│   │   │   └── utils.py
+│   │   ├── memory_attention.py
+│   │   ├── memory_encoder.py
+│   │   ├── position_encoding.py
+│   │   ├── sam
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-310.pyc
+│   │   │   │   ├── mask_decoder.cpython-310.pyc
+│   │   │   │   ├── prompt_encoder.cpython-310.pyc
+│   │   │   │   └── transformer.cpython-310.pyc
+│   │   │   ├── mask_decoder.py
+│   │   │   ├── prompt_encoder.py
+│   │   │   └── transformer.py
+│   │   ├── sam2_base.py
+│   │   └── sam2_utils.py
+│   ├── sam2_hiera_b+.yaml
+│   ├── sam2_hiera_l.yaml
+│   ├── sam2_hiera_s.yaml
+│   ├── sam2_hiera_t.yaml
+│   ├── sam2_image_predictor.py
+│   ├── sam2_video_predictor.py
+│   ├── sam2_video_predictor_legacy.py
+│   └── utils
+│       ├── __init__.py
+│       ├── __pycache__
+│       │   ├── __init__.cpython-310.pyc
+│       │   ├── misc.cpython-310.pyc
+│       │   └── transforms.cpython-310.pyc
+│       ├── amg.py
+│       ├── misc.py
+│       └── transforms.py
+├── sam2_logs
+│   └── configs
+│       └── sam2.1_training
+│           └── sam2.1_hiera_b+_MOSE_finetune.yaml
+│               ├── config.yaml
+│               ├── config_resolved.yaml
+│               ├── logs
+│               │   └── log.txt
+├── sav_dataset
+│   ├── LICENSE
+│   ├── LICENSE_DAVIS
+│   ├── LICENSE_VOS_BENCHMARK
+│   ├── README.md
+│   ├── example
+│   │   ├── sav_000001.mp4
+│   │   ├── sav_000001_auto.json
+│   │   └── sav_000001_manual.json
+│   ├── requirements.txt
+│   ├── sav_evaluator.py
+│   ├── sav_visualization_example.ipynb
+│   └── utils
+│       ├── sav_benchmark.py
+│       └── sav_utils.py
+├── setup.py
+├── structure.py
+├── test.py
+├── test_video.py
+├── tools
+│   ├── README.md
+│   └── vos_inference.py
+└── training
+    ├── README.md
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── __init__.cpython-310.pyc
+    │   ├── loss_fns.cpython-310.pyc
+    │   ├── optimizer.cpython-310.pyc
+    │   └── trainer.cpython-310.pyc
+    ├── assets
+    │   ├── MOSE_sample_train_list.txt
+    │   └── MOSE_sample_val_list.txt
+    ├── dataset
+    │   ├── __init__.py
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-310.pyc
+    │   │   ├── sam2_datasets.cpython-310.pyc
+    │   │   ├── transforms.cpython-310.pyc
+    │   │   ├── utils.cpython-310.pyc
+    │   │   ├── vos_dataset.cpython-310.pyc
+    │   │   ├── vos_raw_dataset.cpython-310.pyc
+    │   │   ├── vos_sampler.cpython-310.pyc
+    │   │   └── vos_segment_loader.cpython-310.pyc
+    │   ├── sam2_datasets.py
+    │   ├── transforms.py
+    │   ├── utils.py
+    │   ├── vos_dataset.py
+    │   ├── vos_raw_dataset.py
+    │   ├── vos_sampler.py
+    │   └── vos_segment_loader.py
+    ├── loss_fns.py
+    ├── model
+    │   ├── __init__.py
+    │   ├── __pycache__
+    │   │   ├── __init__.cpython-310.pyc
+    │   │   └── sam2.cpython-310.pyc
+    │   └── sam2.py
+    ├── optimizer.py
+    ├── scripts
+    │   └── sav_frame_extraction_submitit.py
+    ├── train.py
+    ├── trainer.py
+    └── utils
+        ├── __init__.py
+        ├── __pycache__
+        │   ├── __init__.cpython-310.pyc
+        │   ├── checkpoint_utils.cpython-310.pyc
+        │   ├── data_utils.cpython-310.pyc
+        │   ├── distributed.cpython-310.pyc
+        │   ├── logger.cpython-310.pyc
+        │   └── train_utils.cpython-310.pyc
+        ├── checkpoint_utils.py
+        ├── data_utils.py
+        ├── distributed.py
+        ├── logger.py
+        └── train_utils.py

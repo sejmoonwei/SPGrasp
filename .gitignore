@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+dist/
+build/
+*.egg-info/
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# Data, Logs, and Model Checkpoints
+checkpoints/
+logs/
+tensorboard/
+assets/
+demo/data/
+
+# Dependencies
+*.pth
+*.pt
+*.onnx
+*.pb
+
+# Notebooks runtime
+.ipynb_checkpoints
+
+
+
+
+output/
+notebooks/
