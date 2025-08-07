@@ -95,7 +95,7 @@ def resize(datapoint, index, size, max_size=None, square=False, v2=False):
     # label trainsform
     for obj in datapoint.frames[index].objects:
         if obj.segment is not None:
-            if len(obj.segment.shape) == 3: #fix OCID  error  但是标签可能存在错误
+            if len(obj.segment.shape) == 3: # For OCID, but the label might be incorrect
                 obj.segment = F.resize(obj.segment[None], size).squeeze()
 
             elif len(obj.segment.shape) == 2:
@@ -108,64 +108,60 @@ def resize(datapoint, index, size, max_size=None, square=False, v2=False):
 
 def resize_grasp(datapoint, index, size, max_size=None, square=False, v2=False):
     """
-    保持长宽比将mask较边缩放至目标size，短边填充为正方形
-    所有mask通道使用最近邻插值，避免产生新值
+    Scales the longer side of the mask to the target size while maintaining the aspect ratio, and pads the shorter side to make it a square.
+    All mask channels use nearest-neighbor interpolation to avoid creating new values.
     """
-    # 获取原始尺寸
+    # Get original dimensions
     if v2:
         orig_h, orig_w = datapoint.frames[index].data.size()[-2:]
     else:
         orig_w, orig_h = datapoint.frames[index].data.size
 
-    # 计算缩放比例
+    # Calculate scaling factor
     scale = size / max(orig_h, orig_w)
     new_h = int(orig_h * scale)
     new_w = int(orig_w * scale)
 
-    # 缩放图像
+    # Scale the image
     if v2:
         img = Fv2.resize(datapoint.frames[index].data, (new_h, new_w), antialias=True)
     else:
-        img = F.resize(datapoint.frames[index].data, ( new_h, new_w))
+        img = F.resize(datapoint.frames[index].data, (new_h, new_w))
 
-    # 计算填充参数 (左, 右, 上, 下)
+    # Calculate padding parameters (left, top, right, bottom)
     pad_w = size - new_w
     pad_h = size - new_h
     padding = (
-        pad_w // 2, #left
-        pad_h // 2, #top
-        pad_w // 2, #right
+        pad_w // 2, # left
+        pad_h // 2, # top
+        pad_w // 2, # right
         pad_h // 2,
     )
 
-    # 填充图像
+    # Pad the image
     datapoint.frames[index].data = F.pad(img, padding, fill=0)
 
-    # 处理mask
+    # Process masks
     for obj in datapoint.frames[index].objects:
         if obj.segment is not None:
             mask = obj.segment
-            # 统一转为4D tensor (B, C, H, W)
-            # assert len(mask.shape) == 3
-            
-            mask = mask[None]  # (1, C, H, W)  #1,720,1280?
+            # Unify to 4D tensor (B, C, H, W)
+            mask = mask[None]  # (1, C, H, W)
 
-            # 最近邻缩放
+            # Nearest-neighbor scaling
             resized_mask = F.resize(
                 mask,
-                (new_h, new_w) if v2 else ( new_h, new_w),
+                (new_h, new_w),
                 interpolation=F.InterpolationMode.NEAREST
             )
 
-            # 填充并恢复原始维度
+            # Pad and restore original dimensions
             padded_mask = F.pad(resized_mask, padding, fill=0).squeeze()
             obj.segment = padded_mask
-            #debug
             if padded_mask.shape != torch.Size([5, 512, 512]):
-                raise ValueError(
-                    "You can now inspect the variables.")
+                raise ValueError("You can now inspect the variables.")
 
-    # 更新尺寸记录
+    # Update size record
     datapoint.frames[index].size = (size, size)
     return datapoint
 

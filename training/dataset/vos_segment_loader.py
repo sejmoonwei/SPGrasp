@@ -247,8 +247,8 @@ class LazySegments:
     def __getitem__(self, key):
         if key in self.cache:
             return self.cache[key]
-        rle = self.segments[key]  #这里判断是不是encode的形式   如果是mask不需要解码  2258 1500
-        mask = torch.from_numpy(mask_utils.decode([rle])).permute(2, 0, 1)[0] #2258，1500
+        rle = self.segments[key]  # Check if it's in encoded format; if it's a mask, no decoding is needed.
+        mask = torch.from_numpy(mask_utils.decode([rle])).permute(2, 0, 1)[0] # Shape: [2258, 1500]
         self.cache[key] = mask
         return mask
 

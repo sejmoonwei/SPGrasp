@@ -85,31 +85,31 @@ class SAM2ImagePredictor:
     @staticmethod
     def denormalize(tensor, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
         """
-        将归一化的张量反标准化并转换为可显示格式
+        Denormalizes a tensor and converts it to a displayable format.
         Args:
-            tensor: 形状为 [C, H, W] 或 [B, C, H, W] 的归一化张量
-            mean: 各通道均值
-            std: 各通道标准差
+            tensor: A normalized tensor of shape [C, H, W] or [B, C, H, W].
+            mean: The mean for each channel.
+            std: The standard deviation for each channel.
         Returns:
-            numpy数组，形状为 [H, W, C]，值域0-255，uint8类型
+            A numpy array of shape [H, W, C] with a value range of 0-255 and dtype uint8.
         """
-        if tensor.ndim == 4:  # 批量数据取第一个样本
+        if tensor.ndim == 4:  # Take the first sample from batch data
             tensor = tensor[0]
 
         device = tensor.device
         dtype = tensor.dtype
 
-        # 转换为CPU浮点Tensor
+        # Convert to CPU float tensor
         tensor = tensor.cpu().detach().to(torch.float32)
 
-        # 反标准化计算
+        # Denormalization calculation
         denorm = tensor.clone()
         for c in range(3):
             denorm[c] = denorm[c] * std[c] + mean[c]
 
-        # 调整值域并转换为numpy
-        denorm = denorm.clamp(0, 1)  # 处理可能的溢出
-        image_np = denorm.permute(1, 2, 0).numpy()  # CHW → HWC
+        # Adjust value range and convert to numpy
+        denorm = denorm.clamp(0, 1)  # Handle potential overflow
+        image_np = denorm.permute(1, 2, 0).numpy()  # CHW -> HWC
         image_np = (image_np * 255).astype('uint8')
 
         return image_np
@@ -117,13 +117,13 @@ class SAM2ImagePredictor:
     @staticmethod
     def show_tensor(tensor):
         import matplotlib.pyplot as plt
-        """可视化张量"""
+        """Visualizes a tensor."""
         img = SAM2ImagePredictor.denormalize(tensor)
         plt.imshow(img)
         plt.axis('off')
         plt.show()
 
-    # 使用示例
+    # Example usage:
     # show_tensor(your_tensor)
 
     @torch.no_grad()

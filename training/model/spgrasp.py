@@ -111,7 +111,7 @@ class SPGraspTrain(SAM2Base):
         else:
             # defer image feature computation on a frame until it's being tracked
             backbone_out = {"backbone_fpn": None, "vision_pos_enc": None}
-        backbone_out = self.prepare_prompt_inputs(backbone_out, input) #fix dict 11 这里产生gt
+        backbone_out = self.prepare_prompt_inputs(backbone_out, input) # Ground truth is generated here
         previous_stages_out = self.forward_tracking(backbone_out, input)
 
         return previous_stages_out #dict
@@ -223,7 +223,7 @@ class SPGraspTrain(SAM2Base):
         backbone_out["point_inputs_per_frame"] = {}  # {frame_idx: <input_points>}
         for t in init_cond_frames:
             if not use_pt_input:
-                backbone_out["mask_inputs_per_frame"][t] = gt_masks_per_frame[t]  #只有随机到use_pt_input=Fasle时才不为None
+                backbone_out["mask_inputs_per_frame"][t] = gt_masks_per_frame[t]  # Not None only when use_pt_input is randomly set to False
             else:
                 # During training # P(box) = prob_to_use_pt_input * prob_to_use_box_input
                 use_box_input = self.rng.random() < prob_to_use_box_input
@@ -233,7 +233,7 @@ class SPGraspTrain(SAM2Base):
                             gt_masks_per_frame[t], #fix the last mask is sematic mask
                         )
                     else:
-                        points, labels = sample_box_points( #语义mask作为123维传进来？  语义mask需要转为布尔
+                        points, labels = sample_box_points( # Does the semantic mask come in as a 123-dim tensor? It needs to be boolean.
                             # gt_masks_per_frame[t], #fix the last mask is sematic mask
                             gt_masks_per_frame[t][:, :, -1, :, :]
                         )
@@ -409,7 +409,7 @@ class SPGraspTrain(SAM2Base):
 
         # Optionally, sample correction points iteratively to correct the mask
         if frame_idx in frames_to_add_correction_pt:
-            point_inputs, final_sam_outputs = self._iter_correct_pt_sampling( #这里变为list8
+            point_inputs, final_sam_outputs = self._iter_correct_pt_sampling( # This becomes a list of 8
                 is_init_cond_frame,
                 point_inputs,
                 gt_masks,
@@ -475,7 +475,7 @@ class SPGraspTrain(SAM2Base):
         all_pred_ious = [ious]
         all_point_inputs = [point_inputs]
         all_object_score_logits = [object_score_logits]
-        for _ in range(self.num_correction_pt_per_frame): #采样4次，得到4组输入输出
+        for _ in range(self.num_correction_pt_per_frame): # Sample 4 times to get 4 sets of inputs/outputs
             # sample a new point from the error between prediction and ground-truth
             # (with a small probability, directly sample from GT masks instead of errors)
             if self.training and self.prob_to_sample_from_gt_for_train > 0:

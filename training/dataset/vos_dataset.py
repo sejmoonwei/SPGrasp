@@ -65,14 +65,14 @@ class VOSDataset(VisionDataset):
 
 
         #fix complete
-        datapoint = self.construct(video, sampled_frms_and_objs, segment_loader)  #结构不一样 但是不在这里使用 可以过 wid 0.4 0.5 0.6 
+        datapoint = self.construct(video, sampled_frms_and_objs, segment_loader)  # The structure is different, but it's not used here.
 
         
         for transform in self._transforms:  
             datapoint = transform(datapoint, epoch=self.curr_epoch)
         return datapoint
 
-    def construct(self, video, sampled_frms_and_objs, segment_loader):  #可以在这里面做变换，因为传进来的是路径，出去的是mask
+    def construct(self, video, sampled_frms_and_objs, segment_loader):  # Transformations can be done here, as the input is a path and the output is a mask.
         """
         Constructs a VideoDatapoint sample to pass to transforms
         """
@@ -96,7 +96,7 @@ class VOSDataset(VisionDataset):
                     frame.frame_idx, obj_ids=sampled_object_ids
                 )
             else:
-                segments = segment_loader.load(frame.frame_idx)   # dict 56 每个元素包含尺寸和rle
+                segments = segment_loader.load(frame.frame_idx)   # A dict of 56 elements, each containing size and RLE.
             for obj_id in sampled_object_ids:
                 # Extract the segment
                 if obj_id in segments:
@@ -105,7 +105,7 @@ class VOSDataset(VisionDataset):
                     ), "None targets are not supported"
                     # segment is uint8 and remains uint8 throughout the transforms
                     if segments[obj_id].dtype == torch.uint8:
-                        segment = segments[obj_id] #fix 2258，1500  segments 在这里才变为 mask  train1只有0-1量
+                        segment = segments[obj_id] # Segments become masks here. train1 only has 0-1 values.
                         #debug
                         raise ValueError(
                             "You can now inspect the variables.")

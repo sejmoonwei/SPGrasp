@@ -196,7 +196,7 @@ def sample_box_points(
 
     box_coords = box_coords.reshape(-1, 2, 2)  # always 2 points
     box_labels = box_labels.reshape(-1, 2)
-    return box_coords, box_labels #左上 右下
+    return box_coords, box_labels # Top-left, bottom-right
 
 
 def sample_random_points_from_errors(gt_masks, pred_masks, num_pt=1):

@@ -14,7 +14,7 @@ from torchvision.transforms.functional import InterpolationMode, resize, pad
 
 
 class _ResizePad(nn.Module):
-    """保持长宽比缩放并填充为正方形的自定义变换"""
+    """Custom transform to scale with aspect ratio and pad to a square."""
 
     def __init__(self, size, interpolation=InterpolationMode.NEAREST):
         super().__init__()
@@ -22,15 +22,15 @@ class _ResizePad(nn.Module):
         self.interpolation = interpolation
 
     def forward(self, img):
-        # 获取原始尺寸 (C,H,W)
+        # Get original dimensions (C, H, W)
         orig_h, orig_w = img.shape[-2], img.shape[-1]
 
-        # 计算缩放比例
+        # Calculate scaling factor
         scale = self.size / max(orig_h, orig_w)
         new_h = int(orig_h * scale)
         new_w = int(orig_w * scale)
 
-        # 保持长宽比缩放
+        # Scale while maintaining aspect ratio
         img = resize(
             img,
             size=[new_h, new_w],
@@ -38,7 +38,7 @@ class _ResizePad(nn.Module):
             antialias=False
         )
 
-        # 计算填充参数 (左, 右, 上, 下)
+        # Calculate padding parameters (left, top, right, bottom)
         pad_w = self.size - new_w
         pad_h = self.size - new_h
         padding = [
@@ -48,8 +48,8 @@ class _ResizePad(nn.Module):
             pad_h // 2,
         ]
 
-        # 零值填充为正方形
-        return pad(img, padding,0)
+        # Pad with zeros to make it a square
+        return pad(img, padding, 0)
 
 
 class SAM2Transforms(nn.Module):
@@ -59,7 +59,7 @@ class SAM2Transforms(nn.Module):
             mask_threshold,
             max_hole_area=0.0,
             max_sprinkle_area=0.0,
-            interpolation=InterpolationMode.NEAREST  # 新增插值模式参数
+            interpolation=InterpolationMode.NEAREST  # Added interpolation mode parameter
     ):
         super().__init__()
         self.dataset_mode = "ocid"  # Default mode
@@ -71,7 +71,7 @@ class SAM2Transforms(nn.Module):
         self.std = [0.229, 0.224, 0.225]
         self.to_tensor = ToTensor()
 
-        # 使用自定义缩放填充层
+        # Use custom scale-and-pad layer
         self.transforms = nn.Sequential(
             _ResizePad(resolution, interpolation),
             Normalize(self.mean, self.std)
@@ -118,27 +118,27 @@ class SAM2Transforms(nn.Module):
     @staticmethod
     def process_channels_separately(input_masks):
         """
-        单独处理每个通道的激活函数应用
+        Applies activation functions to each channel separately.
         Args:
-            input_masks: 形状为 [1, 5, 128, 128] 的输入张量
+            input_masks: An input tensor of shape [1, 5, 128, 128].
 
         Returns:
-            处理后的同形状张量
+            A processed tensor of the same shape.
         """
-        # 创建激活函数映射表（根据实际需求修改）
+        # Create a mapping of activation functions (modify as needed)
         activation_map = {
             0: torch.sigmoid,
             1: torch.tanh,
-            2: torch.tanh,  # 将抓取宽度通道的激活函数修改为 ReLU
-            3: torch.relu,  # 注意：这里解决了原始需求中的通道3冲突
+            2: torch.tanh,  # Changed activation for grasp width channel to ReLU
+            3: torch.relu,  # Note: This resolves the conflict for channel 3 in the original requirement
             4: torch.sigmoid
         }
 
         processed = torch.empty_like(input_masks)
 
-        # 逐个通道处理
+        # Process each channel individually
         for channel in range(input_masks.size(1)):
-            func = activation_map.get(channel, lambda x: x)  # 默认不处理
+            func = activation_map.get(channel, lambda x: x)  # Default: no processing
             processed[:, channel] = func(input_masks[:, channel])
 
         return processed
@@ -194,26 +194,26 @@ class SAM2Transforms(nn.Module):
 
         return masks
 
-    # 正确的后处理流程应包含以下步骤：
+    # The correct post-processing flow should include the following steps:
     def postprocess_mask(self, masks, original_size):
         """
-        处理流程：
-        1. 上采样到填充后的尺寸
-        2. 根据数据集模式进行裁剪
-        3. 缩放到原始图像尺寸
+        Processing flow:
+        1. Upsample to the padded size.
+        2. Crop according to the dataset mode.
+        3. Scale to the original image size.
         """
         if self.dataset_mode == "ocid":
             # OCID specific logic
-            # 步骤1：上采样到填充尺寸 (OCID specific)
+            # Step 1: Upsample to padded size (OCID specific)
             upsampled = F.interpolate(masks, (640, 640), mode="nearest")
     
-            # 步骤2：裁剪有效区域（假设训练时上下填充）
-            # 计算填充量：原图高480 → 填充到640需要上下各填 (640-480)//2 = 80
+            # Step 2: Crop the valid region (assuming vertical padding during training)
+            # Calculate padding: original height 480 -> padded to 640, requires (640-480)//2 = 80 padding on top and bottom
             h_start = 80
             h_end = 80 + 480
-            cropped = upsampled[:, :, h_start:h_end, :]  # 裁剪高度维度
+            cropped = upsampled[:, :, h_start:h_end, :]  # Crop the height dimension
     
-            # 步骤3：缩放到原始尺寸
+            # Step 3: Scale to original size
             final_mask = F.interpolate(cropped, original_size, mode="nearest")
 
         elif self.dataset_mode == "jacquard":

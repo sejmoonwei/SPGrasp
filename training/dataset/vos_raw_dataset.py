@@ -236,15 +236,15 @@ class OCIDDataset(VOSRawDataset):
                 line = line.strip()
                 if not line:
                     continue
-                # 以逗号分隔 subfolder 和文件名
+                # Split subfolder and filename by comma
                 parts = line.split(",")
                 if len(parts) != 2:
-                    print(f"警告：跳过格式不正确的行：{line}")
+                    print(f"Warning: Skipping malformed line: {line}")
                     continue
                 subfolder, filename = parts[0], parts[1]
 
-                # 如果你需要对序列号做转换，例如将 "seq01" 替换成 "seq06"
-                # 你可以在这里做处理，例如：
+                # If you need to convert sequence numbers, e.g., replace "seq01" with "seq06",
+                # you can do it here. For example:
                 # subfolder = subfolder.replace("seq01", "seq06")
 
                 full_path = os.path.join(os.path.dirname(os.path.dirname(dataset_folder)), subfolder, "rgb", filename)

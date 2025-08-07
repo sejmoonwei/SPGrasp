@@ -102,27 +102,27 @@ def build_sam2(
 
 def build_sam2_new(config_path: str, ckpt_path: str, device: str = "cuda"):
     """
-    简化版模型加载与推理测试
-    参数:
-        config_path: 配置文件路径 (e.g. "configs/sam2.1_hiera_b+_OCID_finetune.yaml")
-        ckpt_path: 检查点路径
-        device: 运行设备
+    Simplified model loading and inference test.
+    Args:
+        config_path: Path to the configuration file (e.g., "configs/sam2.1_hiera_b+_OCID_finetune.yaml").
+        ckpt_path: Path to the checkpoint file.
+        device: The device to run the model on.
     """
-    # 1. 初始化配置
+    # 1. Initialize configuration
     if GlobalHydra.instance().is_initialized():
         GlobalHydra.instance().clear()
-    with initialize_config_module("sam2", version_base="1.2"):
+    with initialize_config_module("spgrasp", version_base="1.2"):
         cfg = compose(config_name=config_path)
         OmegaConf.resolve(cfg)
 
-    # 2. 仅保留模型相关配置
+    # 2. Keep only model-related configuration
     model_cfg = cfg.trainer.model
 
-    # 3. 实例化模型
+    # 3. Instantiate the model
     model = instantiate(model_cfg).to(device)
     model.eval()
 
-    # 4. 加载权重（简化版）
+    # 4. Load weights (simplified)
     checkpoint = torch.load(ckpt_path, map_location="cpu")
 
     load_state_dict_into_model(
@@ -203,7 +203,7 @@ def build_sam2_video_predictor_hf(model_id, **kwargs):
 def _load_checkpoint(model, ckpt_path):
     if ckpt_path is not None:
         sd = torch.load(ckpt_path, map_location="cpu", weights_only=True)["model"]
-        missing_keys, unexpected_keys = model.load_state_dict(sd) #这个函数没有被实现
+        missing_keys, unexpected_keys = model.load_state_dict(sd) # This function is not implemented
         if missing_keys:
             logging.error(missing_keys)
             raise RuntimeError()
