@@ -12,7 +12,7 @@ def calcAngle2(angle):
     """
     Calculates the opposite angle for a given angle.
     :param angle: Angle in radians.
-    :return: Angle in radians...
+    :return: Angle in radians...;;;;
     """
     return angle + math.pi - int((angle + math.pi) // (2 * math.pi)) * 2 * math.pi
 
