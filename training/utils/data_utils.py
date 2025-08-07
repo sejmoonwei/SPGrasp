@@ -147,8 +147,8 @@ def collate_fn(
                     torch.tensor([t, video_idx], dtype=torch.int)
                 )
                 if len(obj.segment.shape) == 2:
-                    step_t_masks[t].append(obj.segment.to(torch.bool))  #fix！  这里变为布尔 train1 512 512 int8  train2 123 480 640
-                elif len(obj.segment.shape) == 3: #OCID
+                    step_t_masks[t].append(obj.segment.to(torch.bool))  # Convert to boolean. train1: 512x512 int8, train2: 123x480x640
+                elif len(obj.segment.shape) == 3: # For OCID dataset
                     step_t_masks[t].append(obj.segment)
                 step_t_objects_identifier[t].append(
                     torch.tensor([orig_video_id, orig_obj_id, orig_frame_idx])
@@ -162,7 +162,7 @@ def collate_fn(
         ],
         dim=0,
     )
-    masks = torch.stack([torch.stack(masks, dim=0) for masks in step_t_masks], dim=0)  #这个就是 batch.masks
+    masks = torch.stack([torch.stack(masks, dim=0) for masks in step_t_masks], dim=0)  # This becomes batch.masks
     objects_identifier = torch.stack(
         [torch.stack(id, dim=0) for id in step_t_objects_identifier], dim=0
     )

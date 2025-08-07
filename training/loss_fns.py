@@ -241,17 +241,17 @@ class MultiStepMultiMasksAndIous(nn.Module):
         loss_pos = loss_ang = loss_wid = loss_semantic = 0.0
 
         channel_config = {
-            0: {'max_ratio': 100, 'weight': 5},  # 抓取位置
-            1: {'max_ratio': 20, 'weight': 1},  # 角度cos
-            2: {'max_ratio': 20, 'weight': 1},  # 角度sin
-            3: {'max_ratio': 10, 'weight': 1.0},  # 抓取宽度
-            4: {'max_ratio': 5, 'weight': 1.0}  # 语义mask
+            0: {'max_ratio': 100, 'weight': 5},  # Grasp position
+            1: {'max_ratio': 20, 'weight': 1},  # Angle cos
+            2: {'max_ratio': 20, 'weight': 1},  # Angle sin
+            3: {'max_ratio': 10, 'weight': 1.0},  # Grasp width
+            4: {'max_ratio': 5, 'weight': 1.0}  # Semantic mask
             #OCID
-            # 0: {'max_ratio': 100, 'weight': 40},  # 抓取位置
-            # 1: {'max_ratio': 100, 'weight': 20},  # 角度cos
-            # 2: {'max_ratio': 100, 'weight': 20},  # 角度sin
-            # 3: {'max_ratio': 80, 'weight': 1.0},  # 抓取宽度
-            # 4: {'max_ratio': 5, 'weight': 1.0}  # 语义mask
+            # 0: {'max_ratio': 100, 'weight': 40},  # Grasp position
+            # 1: {'max_ratio': 100, 'weight': 20},  # Angle cos
+            # 2: {'max_ratio': 100, 'weight': 20},  # Angle sin
+            # 3: {'max_ratio': 80, 'weight': 1.0},  # Grasp width
+            # 4: {'max_ratio': 5, 'weight': 1.0}  # Semantic mask
         }
 
         grasp_mask = (target_masks[:, 0] > 0).unsqueeze(1)  # [B,1,H,W]
@@ -262,7 +262,7 @@ class MultiStepMultiMasksAndIous(nn.Module):
             target = target_masks[:, c].unsqueeze(1)  #wid:0-0.8
             cfg = channel_config[c]
 
-            # 计算正类权重（自动处理数值稳定性）
+            # Calculate positive class weight (with automatic handling for numerical stability)
             pos = target.sum().float()
             total = target.numel()
             ratio = (total - pos) / torch.clamp_min(pos, 1.0)
@@ -271,18 +271,18 @@ class MultiStepMultiMasksAndIous(nn.Module):
             if c in [1,2]:
                 loss = self.process_angle_channel(pred, target, grasp_mask)
             else:
-            # BCEWithLogitsLoss计算
+            # BCEWithLogitsLoss calculation
                 loss = F.binary_cross_entropy_with_logits(
                     pred,
                     target,
                     pos_weight=ratio.to(pred.device),
-                    reduction='mean'  # 使用均值保持数值稳定
+                    reduction='mean'  # Use mean for numerical stability
                 )
 
-            # 加权累加
+            # Weighted sum
             total_loss = loss * cfg['weight']
 
-            # 分配到对应损失项
+            # Assign to the corresponding loss term
             if c == 0:
                 loss_pos += total_loss
             elif c in [1, 2]:
@@ -292,35 +292,35 @@ class MultiStepMultiMasksAndIous(nn.Module):
             elif c == 4:
                 loss_semantic += total_loss
 
-        # 更新损失字典
+        # Update loss dictionary
         losses.update({
-            "loss_pos": loss_pos,  #     grapnset: 14 37 0.19 0.64   偏执-10时: 4  39.72  0.0074  0.6
-            "loss_ang": loss_ang,   #
-            "loss_wid": loss_wid,   #0.1
-            "loss_semantic": loss_semantic    #0.8
+            "loss_pos": loss_pos,
+            "loss_ang": loss_ang,
+            "loss_wid": loss_wid,
+            "loss_semantic": loss_semantic
         })
-        # 清除非用损失项（根据需求可选）
+        # Clear unused loss terms (optional, based on requirements)
         # losses["loss_iou"] += torch.tensor(0.0)
         # losses["loss_class"] += torch.tensor(0.0)
 
-    # 正确处理方法示例（针对角度通道）
+    # Example of correct handling (for angle channels)
     @staticmethod
     def process_angle_channel(pred, target, grasp_mask):
         """
-        基于抓取位置权重的角度损失计算
+        Angle loss calculation based on grasp position weights.
         Args:
-            grasp_mask: 来自通道0的目标抓取位置 [B,1,H,W]
+            grasp_mask: Target grasp positions from channel 0 [B, 1, H, W].
         """
-        # 应用tanh激活（保持与目标值域一致）
+        # Apply tanh activation (to match the target value range)
         pred_tanh = torch.tanh(pred)
 
-        # 生成权重：抓取位置区域权重=5，其他=1
+        # Generate weights: grasp position area weight=5, others=1
         weight_map = torch.where(grasp_mask > 0, 5.0, 1.0)
 
-        # 计算加权MSE
+        # Calculate weighted MSE
         loss = F.mse_loss(pred_tanh, target, reduction='none') * weight_map
 
-        # 按有效权重归一化
+        # Normalize by effective weight
         total_weight = weight_map.sum() + 1e-6
         return loss.sum() / total_weight
 

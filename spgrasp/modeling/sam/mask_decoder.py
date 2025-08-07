@@ -147,22 +147,22 @@ class MaskDecoder(nn.Module):
         # Select the correct mask or masks for output    #fix
         if multimask_output:
             if self.mode == 'sam':
-                masks = masks[:, 1:, :, :]  #fix   1st mask被扔了  
+                masks = masks[:, 1:, :, :]  # The first mask is discarded
                 iou_pred = iou_pred[:, 1:]
             elif self.mode == 'OCID':
-                masks = masks  #fix  mask:20,5,128,128   grapsnetnew 3,5,128,128
+                masks = masks  # mask shape for OCID: [20, 5, 128, 128], for graspnetnew: [3, 5, 128, 128]
                 iou_pred = iou_pred #20,5   grapsnetnew 3,5
         elif self.dynamic_multimask_via_stability and not self.training:
             masks, iou_pred = self._dynamic_multimask_via_stability(masks, iou_pred)
         else:
-            masks = masks[:, 0:1, :, :] # 1,4,128,128 to 1,1,128,128   grasnet:3,5,128,128 to 3,1,128,128
+            masks = masks[:, 0:1, :, :] # from [1, 4, 128, 128] to [1, 1, 128, 128] or from [3, 5, 128, 128] to [3, 1, 128, 128] for graspnet
             iou_pred = iou_pred[:, 0:1] #1,4 to 1,1  graspnet:3,5 to 3,1
 
         if multimask_output and self.use_multimask_token_for_obj_ptr:
             if self.mode == 'sam':
                 sam_tokens_out = mask_tokens_out[:, 1:]
             elif self.mode == 'OCID':
-                sam_tokens_out = mask_tokens_out  #fix # [bs*obj, num_mulmask, c] 20,5,256 shape ocid  graspnetnew 3,5,256
+                sam_tokens_out = mask_tokens_out  # Shape for OCID: [bs*obj, num_mulmask, c] -> [20, 5, 256]; for graspnetnew: [3, 5, 256]
 
         else:
             # Take the mask output token. Here we *always* use the token for single mask output.
@@ -170,7 +170,7 @@ class MaskDecoder(nn.Module):
             # we still take the single mask token here. The rationale is that we always track
             # after multiple clicks during training, so the past tokens seen during training
             # are always the single mask token (and we'll let it be the object-memory token).
-            sam_tokens_out = mask_tokens_out[:, 0:1]  # [b, 1, c] shape  1,4,256 to 1,1,256  graspnet:3,5,256 to 3,1,256 
+            sam_tokens_out = mask_tokens_out[:, 0:1]  # from [1, 4, 256] to [1, 1, 256] or from [3, 5, 256] to [3, 1, 256] for graspnet
 
         # Prepare output
         return masks, iou_pred, sam_tokens_out, object_score_logits #Mose 1,1,128,128  1,1  1,1,256  1,1
@@ -198,7 +198,7 @@ class MaskDecoder(nn.Module):
             )
             s = 1
         else:
-            output_tokens = torch.cat(   #1,256 + 5,256
+            output_tokens = torch.cat(   # Concatenate tokens of shape [1, 256] and [5, 256]
                 [self.iou_token.weight, self.mask_tokens.weight], dim=0
             )
         output_tokens = output_tokens.unsqueeze(0).expand(
@@ -247,7 +247,7 @@ class MaskDecoder(nn.Module):
         iou_pred = self.iou_prediction_head(iou_token_out)#5,123
         if self.pred_obj_scores:
             assert s == 1
-            object_score_logits = self.pred_obj_score_head(hs[:, 0, :]) #s == 1的情况
+            object_score_logits = self.pred_obj_score_head(hs[:, 0, :]) # Case where s == 1
         else:
             # Obj scores logits - default to 10.0, i.e. assuming the object is present, sigmoid(10)=1
             object_score_logits = 10.0 * iou_pred.new_ones(iou_pred.shape[0], 1)

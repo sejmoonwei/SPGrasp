@@ -468,32 +468,32 @@ class Trainer:
     @staticmethod
     def visualize_5d_tensor(tensor, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]):
         """
-        可视化形状为 (B, T, C, H, W) 的5D张量中的第一个样本和帧
-        参数:
-            tensor: 输入张量 (1, 1, 3, 512, 512)
-            mean: 反标准化使用的均值 (需与预处理时的参数一致)
-            std: 反标准化使用的标准差
+        Visualizes the first sample and frame of a 5D tensor with shape (B, T, C, H, W).
+        Args:
+            tensor: Input tensor (e.g., shape [1, 1, 3, 512, 512]).
+            mean: Mean used for denormalization (must match preprocessing parameters).
+            std: Standard deviation used for denormalization.
         """
-        # 转换张量为CPU并解耦梯度
+        # Convert tensor to CPU and detach from gradients
         img = tensor.detach().cpu()
 
-        # 移除批次和时间维度（假设B=1, T=1）
-        img = img.squeeze(0).squeeze(0)  # 形状变为 (C, H, W)
+        # Remove batch and time dimensions (assuming B=1, T=1)
+        img = img.squeeze(0).squeeze(0)  # Shape becomes (C, H, W)
 
-        # 反标准化处理
+        # Denormalization
         if mean is not None and std is not None:
-            # 将mean/std转换为tensor并扩展维度以便广播
+            # Convert mean/std to tensors and expand dimensions for broadcasting
             mean_tensor = torch.tensor(mean).view(3, 1, 1)
             std_tensor = torch.tensor(std).view(3, 1, 1)
             img = img * std_tensor + mean_tensor
 
-        # 转换通道顺序为 (H, W, C) 并转为numpy数组
+        # Change channel order to (H, W, C) and convert to numpy array
         img_np = img.permute(1, 2, 0).numpy()
 
-        # 限制数值范围到[0,1]以正确显示
+        # Clip value range to [0, 1] for correct display
         img_np = np.clip(img_np, 0, 1)
 
-        # 创建可视化
+        # Create visualization
         plt.figure(figsize=(10, 10))
         plt.imshow(img_np)
         plt.axis('off')
@@ -504,25 +504,25 @@ class Trainer:
     @staticmethod
     def visualize_grasp_labels(label_tensor, object_idx=0):
         """
-        可视化抓取标签的5个通道
-        参数:
-            label_tensor: 形状为 (B, O, 5, H, W) 的张量
-            object_idx: 要可视化的物体索引 (默认0)
+        Visualizes the 5 channels of a grasp label.
+        Args:
+            label_tensor: A tensor of shape (B, O, 5, H, W).
+            object_idx: The index of the object to visualize (default 0).
         """
-        # 提取第一个样本和指定物体的数据
-        batch_idx = 0  # 默认取第一个样本
+        # Extract data for the first sample and the specified object
+        batch_idx = 0  # Default to the first sample
         grasp_data = label_tensor[batch_idx, object_idx].detach().cpu()
 
-        # 通道名称和可视化参数配置（修改cos/sin的范围为[-1,1]）
+        # Channel names and visualization parameters (cos/sin range modified to [-1, 1])
         channels = [
             {"title": "Grasp Position (Binary)", "cmap": "gray", "vmin": 0, "vmax": 1},
-            {"title": "Angle Cos", "cmap": "coolwarm", "vmin": -1, "vmax": 1},  # 改为对称色图
-            {"title": "Angle Sin", "cmap": "coolwarm", "vmin": -1, "vmax": 1},  # 改为对称色图
+            {"title": "Angle Cos", "cmap": "coolwarm", "vmin": -1, "vmax": 1},  # Changed to a symmetric colormap
+            {"title": "Angle Sin", "cmap": "coolwarm", "vmin": -1, "vmax": 1},  # Changed to a symmetric colormap
             {"title": "Grasp Width", "cmap": "plasma", "vmin": 0, "vmax": 1},
             {"title": "Semantic Mask (Binary)", "cmap": "gray", "vmin": 0, "vmax": 1}
         ]
 
-        # 创建可视化布局
+        # Create visualization layout
         fig, axes = plt.subplots(1, 5, figsize=(25, 5))
         plt.subplots_adjust(wspace=0.05)
 
@@ -530,13 +530,13 @@ class Trainer:
             ax = axes[idx]
             channel_data = grasp_data[idx].numpy()
 
-            # 特殊处理二值通道（保持原逻辑）
+            # Special handling for binary channels (maintaining original logic)
             if idx in [0, 4]:
-                channel_data = np.round(channel_data)  # 强制二值化
+                channel_data = np.round(channel_data)  # Force binarization
 
-            # 添加数值范围保护（针对cos/sin）
+            # Add value range protection (for cos/sin)
             if idx in [1, 2]:
-                channel_data = np.clip(channel_data, -1, 1)  # 确保值在[-1,1]之间
+                channel_data = np.clip(channel_data, -1, 1)  # Ensure values are between -1 and 1
 
             im = ax.imshow(channel_data,
                            cmap=channels[idx]["cmap"],
@@ -547,7 +547,7 @@ class Trainer:
             ax.set_title(channels[idx]["title"], fontsize=14)
             ax.axis('off')
 
-            # 为所有通道添加颜色条（调整二值通道的显示）
+            # Add colorbars for all channels (adjusting display for binary channels)
             cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
             cbar.ax.tick_params(labelsize=10)
 
@@ -861,7 +861,7 @@ class Trainer:
             )  # move tensors in a tensorclass
 
             try:
-                self._run_step(batch, phase, loss_mts, extra_loss_mts)# 到此wid是离散的
+                self._run_step(batch, phase, loss_mts, extra_loss_mts) # At this point, width is discrete
 
                 # compute gradient and do optim step
                 exact_epoch = self.epoch + float(data_iter) / iters_per_epoch

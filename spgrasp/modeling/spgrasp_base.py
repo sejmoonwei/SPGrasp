@@ -441,7 +441,7 @@ class SAM2Base(torch.nn.Module):
                 if self.soft_no_obj_ptr:
                     lambda_is_obj_appearing = object_score_logits.sigmoid()
                 else:
-                    lambda_is_obj_appearing = is_obj_appearing.float()  #fix 为什么appear是0？
+                    lambda_is_obj_appearing = is_obj_appearing.float()  # Why is 'appear' 0?
                 if self.fixed_no_obj_ptr:
                     obj_ptr = lambda_is_obj_appearing * obj_ptr
                 obj_ptr = obj_ptr + (1 - lambda_is_obj_appearing) * self.no_obj_ptr
@@ -689,9 +689,9 @@ class SAM2Base(torch.nn.Module):
                         # split a pointer into (C // self.mem_dim) tokens for self.mem_dim < C
                         obj_ptrs = obj_ptrs.reshape(
                             -1, B, C // self.mem_dim, self.mem_dim
-                        ) #10，3，4，64
-                        obj_ptrs = obj_ptrs.permute(0, 2, 1, 3).flatten(0, 1) #40，3，64   Mose 都是8，1，64
-                        obj_pos = obj_pos.repeat_interleave(C // self.mem_dim, dim=0) #8，3，64
+                        ) # Shape: [10, 3, 4, 64]
+                        obj_ptrs = obj_ptrs.permute(0, 2, 1, 3).flatten(0, 1) # Shape: [40, 3, 64]. For Mose, it's always [8, 1, 64]
+                        obj_pos = obj_pos.repeat_interleave(C // self.mem_dim, dim=0) # Shape: [8, 3, 64]
                     to_cat_memory.append(obj_ptrs)
                     to_cat_memory_pos_embed.append(obj_pos)
                     num_obj_ptr_tokens = obj_ptrs.shape[0]
@@ -828,7 +828,7 @@ class SAM2Base(torch.nn.Module):
                 current_vision_feats=current_vision_feats[-1:],
                 current_vision_pos_embeds=current_vision_pos_embeds[-1:],
                 feat_sizes=feat_sizes[-1:],
-                output_dict=output_dict, #其中output_dict["cond_frame_outputs"][stage_id] =上一阵 current_out
+                output_dict=output_dict, # where output_dict["cond_frame_outputs"][stage_id] is the previous current_out
                 num_frames=num_frames,
                 track_in_reverse=track_in_reverse,
             )
@@ -934,7 +934,7 @@ class SAM2Base(torch.nn.Module):
 
         # Finally run the memory encoder on the predicted mask to encode
         # it into a new memory feature (that can be used in future frames)
-        self._encode_memory_in_output( #mask中提取mem
+        self._encode_memory_in_output( # Extract memory from mask
             current_vision_feats,
             feat_sizes,
             point_inputs,
