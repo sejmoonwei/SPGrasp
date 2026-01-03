@@ -1,0 +1,50 @@
+# Qwen2VL-Grasp Configuration for GraspNet Fine-tuning
+# Optimized settings for GraspNet-1Billion dataset
+
+# =====================
+# Data Configuration
+# =====================
+dataset_root: /data/myp/grasp_dataset/scenes
+camera_type: kinect
+num_train_scenes: 100
+num_val_scenes: 30
+output_size: [480, 640]
+
+# =====================
+# Model Configuration
+# =====================
+pretrained_model: Qwen/Qwen2-VL-2B-Instruct
+freeze_vit: true
+vit_lr_scale: 0.01
+decoder_channels: 256
+num_decoder_layers: 4
+use_flash_attn: true
+
+# =====================
+# Training Configuration
+# =====================
+batch_size: 8          # Larger batch for stable training
+epochs: 200            # More epochs for thorough training
+learning_rate: 5.0e-5  # Lower LR for fine-tuning
+weight_decay: 0.01
+warmup_epochs: 10
+min_lr: 1.0e-7
+
+use_amp: true
+
+# =====================
+# Loss Configuration
+# =====================
+loss_type: focal       # Focal loss for better position detection
+pos_weight: 5.0
+ang_weight: 5.0
+wid_weight: 1.0
+sem_weight: 1.0
+
+# =====================
+# Other Settings
+# =====================
+num_workers: 8
+log_interval: 100
+save_interval: 20
+output_dir: outputs/qwen2vl_grasp_graspnet

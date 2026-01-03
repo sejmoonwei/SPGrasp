@@ -1,0 +1,54 @@
+# Qwen2VL-Grasp Default Configuration
+# Single-frame grasp prediction using Qwen2-VL ViT + Grasp Decoder
+
+# =====================
+# Data Configuration
+# =====================
+dataset_root: /data/myp/grasp_dataset/scenes
+camera_type: kinect
+num_train_scenes: 100  # scene_0000 to scene_0099
+num_val_scenes: 30     # scene_0100 to scene_0129
+output_size: [480, 640]  # H, W
+
+# =====================
+# Model Configuration
+# =====================
+pretrained_model: Qwen/Qwen2-VL-2B-Instruct
+freeze_vit: true       # Freeze ViT encoder (recommended for small datasets)
+vit_lr_scale: 0.1      # LR scale for ViT when not frozen
+decoder_channels: 256  # Hidden channels in decoder
+num_decoder_layers: 4  # Number of upsampling layers
+use_flash_attn: true   # Use flash attention if available
+
+# =====================
+# Training Configuration
+# =====================
+batch_size: 4
+epochs: 100
+learning_rate: 1.0e-4
+weight_decay: 0.01
+warmup_epochs: 5
+min_lr: 1.0e-6
+
+# Mixed precision
+use_amp: true
+
+# =====================
+# Loss Configuration
+# =====================
+loss_type: default  # 'default' or 'focal'
+pos_weight: 5.0     # Weight for position loss
+ang_weight: 5.0     # Weight for angle loss
+wid_weight: 1.0     # Weight for width loss
+sem_weight: 1.0     # Weight for semantic loss
+
+# =====================
+# Other Settings
+# =====================
+num_workers: 4
+log_interval: 50
+save_interval: 10
+output_dir: outputs/qwen2vl_grasp
+
+# Resume from checkpoint (optional)
+# resume: outputs/qwen2vl_grasp/checkpoint_epoch50.pt

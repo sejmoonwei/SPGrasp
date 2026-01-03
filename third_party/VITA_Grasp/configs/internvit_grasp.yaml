@@ -1,0 +1,120 @@
+# InternViT-Grasp Configuration (ByteTrack-style aligned)
+#
+# Key design: Square input with aspect ratio preserved
+# - Input: 640x640 (aspect-ratio preserved + padding, like ByteTrack)
+# - ViT: 448x448 (uniform downscale from 640, no distortion!)
+# - Output: 640x640 (matches GT)
+
+# =============================================================================
+# Model Configuration
+# =============================================================================
+model:
+  type: "internvit"
+
+  # InternViT configuration
+  pretrained_model: "OpenGVLab/InternViT-300M-448px"
+  freeze_vit: true
+  vit_lr_scale: 0.1
+
+  # InternViT-300M specs
+  vit_hidden_dim: 1024
+  vit_size: [448, 448]  # ViT internal fixed size
+
+  # Grasp decoder configuration
+  decoder_channels: 256
+  num_decoder_layers: 4
+
+  # Input/Output size (ByteTrack-style square)
+  input_size: [640, 640]  # Square input, aspect-ratio preserved + padding
+
+# =============================================================================
+# Data Configuration
+# =============================================================================
+data:
+  # GraspNet dataset paths
+  dataset_root: "/data/myp/grasp_dataset/scenes"
+  train_scenes: [0, 100]     # scene_0000 - scene_0099
+  val_scenes: [100, 130]     # scene_0100 - scene_0129
+  test_scenes: [130, 190]    # scene_0130 - scene_0189
+
+  # Camera type
+  camera_type: "kinect"
+
+  # ByteTrack-style preprocessing
+  input_size: [640, 640]     # Square input
+  pad_value: 114             # YOLOX padding convention
+
+  # GT generation
+  gaussian_sigma: 2.0
+  max_width: 100.0           # Max grasp width for normalization
+
+# =============================================================================
+# Training Configuration
+# =============================================================================
+training:
+  # Batch and workers
+  batch_size: 8
+  num_workers: 4
+
+  # Epochs
+  epochs: 100
+  warmup_epochs: 5
+
+  # Optimizer
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  min_lr: 1.0e-6
+
+  # Mixed precision
+  use_amp: true
+
+  # Gradient clipping
+  max_grad_norm: 1.0
+
+  # Loss weights
+  pos_weight: 5.0
+  ang_weight: 5.0
+  wid_weight: 1.0
+  sem_weight: 1.0
+
+  # Loss type: "default" or "focal"
+  loss_type: "default"
+
+# =============================================================================
+# Checkpointing
+# =============================================================================
+checkpointing:
+  save_interval: 10  # epochs
+  output_dir: "outputs/internvit_grasp"
+  log_interval: 50  # iterations
+
+# =============================================================================
+# Wandb Configuration
+# =============================================================================
+wandb:
+  use_wandb: true
+  project: "vita-grasp"
+  run_name: null  # Auto-generated if null
+
+# =============================================================================
+# Architecture Summary
+# =============================================================================
+# Data Flow (ByteTrack-aligned):
+#
+#   Original image (720x1280)
+#   -> Dataset: aspect-ratio preserve + pad to 640x640
+#      scale = min(640/720, 640/1280) = 0.5
+#      actual: 360x640, padded to 640x640
+#   -> Grasp GT generated at 640x640 using same scale
+#
+#   Model:
+#   -> Input: 640x640 (square)
+#   -> Resize to 448x448 for ViT (uniform scale, both squares!)
+#   -> ViT extracts features (32x32 patches = 1024 tokens)
+#   -> Decoder upsamples to 640x640
+#   -> Output matches GT perfectly!
+#
+# Why this works:
+# - 640x640 -> 448x448 is UNIFORM scaling (no aspect ratio distortion)
+# - Grasp angles preserved correctly
+# - Image and GT aligned in 640x640 coordinate space

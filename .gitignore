@@ -1,35 +1,52 @@
+# Weights and outputs
+*.pth
+*.pth.tar
+*.pt
+*.ckpt
+checkpoints/
+**/outputs/
+**/YOLOX_outputs/
+
+# Logs
+*.log
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
+.python-version
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude/AI
+.claude/
+prompt/
+
+# Internal docs
+OPENSOURCE_LOG.md
+*.tex
+
+# Build
 *.so
-dist/
 build/
+dist/
 *.egg-info/
 
-# IDE / Editor
-.vscode/
-.idea/
+# Notebooks checkpoints
+.ipynb_checkpoints/
 
-# Data, Logs, and Model Checkpoints
-checkpoints/
-logs/
-tensorboard/
-assets/
-demo/data/
+# OS
+.DS_Store
+Thumbs.db
 
-# Dependencies
-*.pth
-*.pt
-*.onnx
-*.pb
-
-# Notebooks runtime
-.ipynb_checkpoints
-
-
-
-
-output/
-notebooks/
+# Inference/Demo/Eval scripts (not open-sourced)
+inference_scripts/
+**/demo*.py
+**/eval*.py
+**/benchmark*.py
+**/visualize*.py
+**/decode.py

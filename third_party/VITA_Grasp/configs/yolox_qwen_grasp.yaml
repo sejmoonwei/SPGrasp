@@ -1,0 +1,179 @@
+# YOLOX-Qwen2VL Instance Grasp Configuration
+# For training and inference of instance-level grasp prediction
+
+# =============================================================================
+# Model Configuration
+# =============================================================================
+model:
+  # Pipeline mode: "roi_crop" (accurate) or "shared" (fast)
+  mode: "roi_crop"
+
+  # Qwen2VL configuration
+  qwen:
+    pretrained_model: "Qwen/Qwen2-VL-2B-Instruct"
+    freeze_vit: true
+    vit_hidden_dim: 1536
+    patch_size: 14
+
+  # YOLOX configuration (ByteTrack)
+  yolox:
+    exp_file: "../ByteTrack/exps/grasp/yolox_s_grasp_dense.py"
+    ckpt_path: "../ByteTrack/YOLOX_outputs/ckpts_for_inf/adam_epoch6_v1.pth.tar"
+    conf_thresh: 0.25
+    nms_thresh: 0.45
+    num_classes: 1
+
+  # ROI extraction configuration
+  roi:
+    context_ratio: 1.5
+    output_size: [30, 40]  # (H, W)
+
+  # Instance grasp head configuration
+  grasp_head:
+    hidden_channels: 256
+    output_size: [120, 160]  # (H, W)
+    lightweight: false
+
+# =============================================================================
+# Data Configuration
+# =============================================================================
+data:
+  # GraspNet dataset paths
+  data_dir: "/data/myp/grasp_dataset/scenes"
+  train_scenes: [0, 100]     # scene_0000 - scene_0099
+  val_scenes: [100, 130]     # scene_0100 - scene_0129
+  test_scenes: [130, 190]    # scene_0130 - scene_0189
+
+  # Camera type
+  camera: "kinect"  # "kinect" or "realsense"
+
+  # Image configuration
+  input_size: [480, 640]  # (H, W)
+
+  # GT generation
+  gaussian_sigma: 2.0
+  gt_output_size: [120, 160]  # Match grasp_head.output_size
+
+  # Data augmentation
+  augmentation:
+    enabled: true
+    horizontal_flip: true
+    vertical_flip: false
+    rotation_range: [-15, 15]  # degrees
+    scale_range: [0.9, 1.1]
+    color_jitter:
+      brightness: 0.2
+      contrast: 0.2
+      saturation: 0.1
+      hue: 0.05
+
+# =============================================================================
+# Training Configuration
+# =============================================================================
+training:
+  # Batch and workers
+  batch_size: 8
+  num_workers: 4
+  pin_memory: true
+
+  # Epochs
+  max_epochs: 50
+  warmup_epochs: 3
+
+  # Optimizer
+  optimizer:
+    type: "AdamW"
+    lr: 1.0e-4
+    weight_decay: 1.0e-4
+    betas: [0.9, 0.999]
+
+  # Learning rate scheduler
+  scheduler:
+    type: "CosineAnnealingLR"
+    T_max: 50
+    eta_min: 1.0e-6
+
+  # Mixed precision
+  amp:
+    enabled: true
+    dtype: "float16"
+
+  # Gradient clipping
+  gradient_clip:
+    enabled: true
+    max_norm: 1.0
+
+  # Loss weights
+  loss_weights:
+    heatmap: 1.0
+    angle: 1.0
+    width: 1.0
+    semantic: 0.5
+
+  # Focal loss parameters
+  focal_loss:
+    alpha: 2.0
+    beta: 4.0
+    pos_thresh: 0.5
+
+  # Checkpointing
+  save_interval: 10  # epochs
+  keep_last_n: 3
+
+# =============================================================================
+# Evaluation Configuration
+# =============================================================================
+evaluation:
+  # Evaluation interval
+  eval_interval: 5  # epochs
+
+  # Grasp detection thresholds
+  grasp_threshold: 0.5
+  iou_threshold: 0.25
+
+  # Top-k grasps per instance
+  top_k: 1
+
+  # Metrics to compute
+  metrics:
+    - "accuracy"      # Detection accuracy
+    - "success_rate"  # Grasp success rate
+    - "angle_error"   # Mean angle error (degrees)
+
+# =============================================================================
+# Output Configuration
+# =============================================================================
+output:
+  # Output directory
+  output_dir: "outputs/yolox_qwen_instance"
+
+  # Logging
+  log_interval: 50  # iterations
+
+  # Visualization
+  vis_interval: 500  # iterations
+  num_vis_samples: 4
+
+  # TensorBoard
+  tensorboard:
+    enabled: true
+    log_dir: "runs/yolox_qwen_instance"
+
+# =============================================================================
+# Inference Configuration
+# =============================================================================
+inference:
+  # Checkpoint to use
+  checkpoint: null  # Set to path for inference
+
+  # Detection settings
+  use_external_detector: false
+  external_detector: null  # "grounding_dino" or path to detector
+
+  # Output settings
+  save_visualizations: true
+  visualization_dir: "outputs/visualizations"
+
+  # Performance
+  batch_inference: true
+  max_batch_size: 16
